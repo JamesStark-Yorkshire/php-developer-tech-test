@@ -1,17 +1,22 @@
 {% extends 'app.twig' %}
 
+{% block content %}
 <h1>Results</h1>
 
-<p>You matched with <!-- NUMBER OF COMPANIES MATCHED --> </p>
+<p>You matched with {{ matchedCompanies|length }} </p>
 
 <div class="matches">
     {% for company in matchedCompanies %}
         <div class="matches__match">
             <h3>{{ company.name }}</h3>
             <p>{{ company.description }}</p>
-            <a href="#" class="matches__match__more">more</a>
-
-            <div class="match__match__details" style="display:none">
+            <a href="#" class="matches__match__more" onclick="showMore({{ company.id }})">more</a>
+            <div id="matches__match__more_{{ company.id }}" style="display: none">
+                <p><strong>ID:</strong> {{ company.id }}</p>
+                <p><strong>Postcodes:</strong> {{ company.postcodes }}</p>
+                <p><strong>Bedrooms:</strong> {{ company.bedrooms }}</p>
+            </div>
+            <div class="match__match__details">
                 <p><strong>Email:</strong> {{ company.email }}</p>
                 <p><strong>Phone:</strong> {{ company.phone }}</p>
                 <p><strong>Website:</strong> {{ company.website }}</p>
@@ -19,3 +24,14 @@
         </div>
     {% endfor %}
 </div>
+<script>
+    function showMore(id) {
+        let div = document.getElementById("matches__match__more_" + id);
+        if(div.style.display === "block") {
+            div.style.display = "none"
+            return
+        }
+        div.style.display = "block"
+    }
+</script>
+{% endblock %}
