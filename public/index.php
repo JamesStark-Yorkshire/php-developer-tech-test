@@ -1,5 +1,8 @@
 <?php
 
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+
 require __DIR__ . '/../bootstrap/init.php';
 
 $router = new App\Router();

@@ -15,6 +15,7 @@
                 <p><strong>ID:</strong> {{ company.id }}</p>
                 <p><strong>Postcodes:</strong> {{ company.postcodes }}</p>
                 <p><strong>Bedrooms:</strong> {{ company.bedrooms }}</p>
+                <p><strong>Type:</strong> {{ company.type }}</p>
             </div>
             <div class="match__match__details">
                 <p><strong>Email:</strong> {{ company.email }}</p>
@@ -24,14 +25,4 @@
         </div>
     {% endfor %}
 </div>
-<script>
-    function showMore(id) {
-        let div = document.getElementById("matches__match__more_" + id);
-        if(div.style.display === "block") {
-            div.style.display = "none"
-            return
-        }
-        div.style.display = "block"
-    }
-</script>
 {% endblock %}

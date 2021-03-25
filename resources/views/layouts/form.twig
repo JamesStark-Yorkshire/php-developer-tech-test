@@ -1,7 +1,7 @@
 {% extends 'app.twig' %}
 
 {% block content %}
-<form name="form" method="post">
+<form name="form" method="post" onsubmit="compare.disabled = true; return true;">
 	<fieldset>
 		<legend>Contact Details</legend>
 		<p>

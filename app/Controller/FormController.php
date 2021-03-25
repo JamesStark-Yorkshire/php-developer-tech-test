@@ -17,7 +17,7 @@ class FormController extends Controller
 
         $matchedCompanies = $matcher->match($request)
             ->deductCredits()
-            ->pick(3);
+            ->pick($_ENV['MAX_MATCHED_COMPANIES']);
 
         $this->render('results.twig', [
             'matchedCompanies'  => $matchedCompanies,
