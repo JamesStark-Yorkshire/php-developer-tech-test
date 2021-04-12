@@ -2,12 +2,17 @@
 
 namespace App\Service;
 
+use PDO;
+
 class CompanyMatcher
 {
-    private $db;
-    private $matches = [];
+    private PDO $db;
+    private array $matches = [];
+    private array $params = [];
+    private bool $rand = false;
+    private ?int $limit = null;
 
-    public function __construct(\PDO $db)
+    public function __construct(PDO $db)
     {
         $this->db = $db;
     }
@@ -18,48 +23,8 @@ class CompanyMatcher
         $params['bedrooms'] = (int)$input['bedrooms'] ?? null;
         $params['type'] = $input['type'] ?? null;
 
-        $this->matches = $this->db
-            ->query($this->buildQuery($params))
-            ->fetchAll();
-
-        return $this;
-    }
-
-    public function pick(int $count)
-    {
-        $result = [];
-
-        if ($this->matches) {
-            // Get possible match count
-            if(($size = count($this->matches)) <= $count) {
-                $count = $size;
-            }
-
-            // Get specific number of item and make sure it is in an array
-            $ids = (array) array_rand($this->matches, $count);
-
-            foreach ($ids as $id) {
-                $result[] = $this->matches[$id];
-            }
-        }
-
-        return $result;
-    }
-
-    public function results(): array
-    {
-        return $this->matches;
-    }
-
-    public function deductCredits()
-    {
-        $ids = array_column($this->matches, 'id');
-
-        if ($ids) {
-            $this->db->query('UPDATE `companies` SET credits = credits - 1 WHERE id IN (' . implode(',', $ids) . ')');
-        }
-
-        $this->logOutOfCredit();
+        // Set Parameters
+        $this->params = $params;
 
         return $this;
     }
@@ -78,29 +43,90 @@ class CompanyMatcher
     }
 
     /**
-     * Build filtering query
+     * Build query
      *
-     * @param array $params
-     * @return string
      */
-    private function buildQuery(array $params = []): string
+    private function buildQuery(): array
     {
-        $query = 'SELECT * FROM companies LEFT JOIN company_matching_settings USING(id)';
+        $query = 'SELECT * FROM companies INNER JOIN company_matching_settings ON companies.id = company_matching_settings.company_id';
 
-        $params = array_filter($params);
+        // Only fetch active and companies have remaining credit
+        $query .= ' WHERE active = 1 AND credits > 0';
 
-        $count = 0;
+        $params = array_filter($this->params);
+        $queryParams = [];
         foreach ($params as $key => $value) {
-            if ($count == 0) {
-                $query .= ' WHERE';
-            } else {
-                $query .= ' AND';
-            }
-            $query .= " $key LIKE '%$value%'";
-            $count++;
+            $query .= " AND $key LIKE :$key";
+            $queryParams[":$key"] = "%$value%";
         }
 
-        return $query;
+        return [$query, $queryParams];
+    }
+
+    public function random(bool $rand = true): self
+    {
+        $this->rand = $rand;
+
+        return $this;
+    }
+
+    public function pick(int $count): self
+    {
+        $this->limit = $count;
+
+        return $this;
+    }
+
+    public function results(): array
+    {
+        if (!$this->matches) {
+            $this->executeQuery();
+
+            $this->deductCredits($this->matches);
+        }
+
+        return $this->matches;
+    }
+
+    private function executeQuery()
+    {
+        [$query, $queryParams] = $this->buildQuery();
+
+        if ($this->rand) {
+            $query .= ' ORDER BY RAND()';
+        }
+
+        if ($this->limit) {
+            $query .= ' LIMIT :limit';
+        }
+
+        // Setup PDO Statement
+        $pdoStatement = $this->db->prepare($query);
+
+        // Blind Value
+        foreach($queryParams as $param => $value) {
+            $pdoStatement->bindValue($param, $value);
+        }
+
+        // Blind limit value
+        if ($this->limit) {
+            $pdoStatement->bindValue(':limit', $this->limit, PDO::PARAM_INT);
+        }
+
+        $pdoStatement->execute();
+
+        $this->matches = $pdoStatement->fetchAll();
+    }
+
+    private function deductCredits(array $items)
+    {
+        $ids = array_column($items, 'company_id');
+
+        if ($ids) {
+            $this->db->query('UPDATE `companies` SET credits = credits - 1 WHERE id IN (' . implode(',', $ids) . ')');
+        }
+
+        $this->logOutOfCredit();
     }
 
     /**

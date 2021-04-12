@@ -4,7 +4,8 @@
     "require": {
         "twig/twig": "^3.3",
         "vlucas/phpdotenv": "^5.3",
-        "symfony/monolog-bundle": "^3.6"
+        "symfony/monolog-bundle": "^3.6",
+      "ext-pdo": "*"
     },
     "authors": [
         {

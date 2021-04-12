@@ -10,9 +10,9 @@
         <div class="matches__match">
             <h3>{{ company.name }}</h3>
             <p>{{ company.description }}</p>
-            <a href="#" class="matches__match__more" onclick="showMore({{ company.id }})">more</a>
-            <div id="matches__match__more_{{ company.id }}" style="display: none">
-                <p><strong>ID:</strong> {{ company.id }}</p>
+            <a href="#" class="matches__match__more" onclick="showMore({{ company.company_id }})">more</a>
+            <div id="matches__match__more_{{ company.company_id }}" style="display: none">
+                <p><strong>ID:</strong> {{ company.company_id }}</p>
                 <p><strong>Postcodes:</strong> {{ company.postcodes }}</p>
                 <p><strong>Bedrooms:</strong> {{ company.bedrooms }}</p>
                 <p><strong>Type:</strong> {{ company.type }}</p>

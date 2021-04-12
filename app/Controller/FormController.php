@@ -16,8 +16,9 @@ class FormController extends Controller
         $matcher = new CompanyMatcher($this->db());
 
         $matchedCompanies = $matcher->match($request)
-            ->deductCredits()
-            ->pick($_ENV['MAX_MATCHED_COMPANIES']);
+            ->random()
+            ->pick($_ENV['MAX_MATCHED_COMPANIES'])
+            ->results();
 
         $this->render('results.twig', [
             'matchedCompanies'  => $matchedCompanies,
