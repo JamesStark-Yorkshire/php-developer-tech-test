@@ -23,7 +23,7 @@ class Log
     private static function init()
     {
         static::$instance = new Logger('app');
-        static::$instance->pushHandler(new StreamHandler(__DIR__ . '/../'. $_ENV['LOG_PATH'], Logger::DEBUG));
+        static::$instance->pushHandler(new StreamHandler(__DIR__ . '/../../'. $_ENV['LOG_PATH'], Logger::DEBUG));
     }
 
     /**
